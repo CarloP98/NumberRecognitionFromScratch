@@ -1,0 +1,155 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>paper</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <center>
+      <div class="waviy">
+        <span style="--i:1">D</span>
+        <span style="--i:2">R</span>
+        <span style="--i:3">A</span>
+        <span style="--i:4">W</span>
+        <span style="--i:5"></span>
+        <span style="--i:6"></span>
+        <span style="--i:7">A</span>
+        <span style="--i:8"></span>
+        <span style="--i:9"></span>
+        <span style="--i:10">D</span>
+        <span style="--i:11">I</span>
+        <span style="--i:12">G</span>
+        <span style="--i:13">I</span>
+        <span style="--i:14">T</span>
+      </div>
+      <canvas id="num" width="300" height="300" style="border:4px solid #a9a9a9;"></canvas>
+      <br>
+      <button onclick="clearCanvas()" class="button buttonA">clear</button>
+      <button onclick="predict()" class="button buttonA">predict</button>
+      <br>
+      <!--<canvas id="con" width="300" height="300" style="border:4px solid #a9a9a9;"></canvas>-->
+    </center>
+    </center>
+    <script src="js/matrixFunctions.js"></script>
+    <script src="js/nn.js"></script>
+    <!--<script src="json/train.json"></script>-->
+    <!--<script src="json/test.json"></script>-->
+    <script src="json/trained.json"></script>
+  </body>
+
+  <script>
+    var model = new nn([[784], [100, "sigmoid"], [20, "sigmoid"], [10, "softmax"]], "cce", 0.0008, {optimizer: "adam"});
+    model.parameters = trainedModel
+
+    var canvas = document.querySelector("#num");
+    var ctx = canvas.getContext('2d');
+
+    var pos = { x: 0, y: 0 };
+
+    document.addEventListener('mousemove', draw);
+    document.addEventListener('mousedown', setPosition);
+    document.addEventListener('mouseenter', setPosition);
+
+    function setPosition(e) {
+      pos.x = e.clientX;
+      pos.y = e.clientY;
+    }
+
+    function draw(e) {
+      if (e.buttons !== 1) return;
+      ctx.beginPath();
+      ctx.lineWidth = 25;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = '#000000';
+      ctx.moveTo(pos.x - getOffset(canvas).left, pos.y - getOffset(canvas).top);
+      setPosition(e);
+      ctx.lineTo(pos.x - getOffset(canvas).left, pos.y - getOffset(canvas).top);
+      ctx.stroke();
+    }
+
+    function getOffset(el) {
+      const rect = el.getBoundingClientRect();
+      return {
+        left: rect.left + window.scrollX,
+        top: rect.top + window.scrollY
+      };
+    }
+
+    function clearCanvas(){
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+    }
+
+    function drawNumber(id, num){
+      var cc = document.querySelector("#"+id).getContext('2d');
+      var h = cc.canvas.height/28;
+      var w = cc.canvas.width/28;
+      for(var i = 0; i < 28; i++) {
+        for(var j = 0; j < 28; j++) {
+          var c = num[28*i + j];
+          cc.fillStyle = "rgba("+c+","+c+","+c+","+1+")";
+          cc.fillRect(w*j, h*i, w, h);
+        }
+      }
+    }
+
+    function predict(){
+      var h = ctx.canvas.height/28;
+      var w = ctx.canvas.width/28;
+      var matrix = []
+      for(var i = 0; i < 28; i++) {
+        for(var j = 0; j < 28; j++) {
+          const imgData = ctx.getImageData(w*j, h*i, w, h);
+          const data = imgData.data;
+          var avg = 0
+          for(let o = 0; o < data.length; o += 4){
+            avg +=(data[o+3]);
+          }
+          avg/= (data.length/4)
+          matrix.push(avg)
+        }
+      }
+      var prediction = model.predict([div(matrix,255)])
+      var num = argMax(prediction)
+      var ass = parseFloat(prediction[num])*100
+      alert("Prediction: " + num + "   " + ass.toFixed(2) + "%")
+      //drawNumber("con", matrix)
+    }
+
+    function train(){
+      var epoch = 10
+      var batchSize = 32
+      var prevTestAccuracy = -1
+      var currLoss = undefined
+
+      for(var x=1; x<epoch+1; x++){
+        console.log("epoch: " + x);
+        var testAccuracy = 0
+        for(var y=0; y<trainDataset.length; y+=batchSize){
+          if(y%(batchSize*100)==0)
+            console.log(y + " loss: " + currLoss)
+          var [input,output] = [[],[]]
+          for(var g=0; g<batchSize; g++){
+            input.push(div(trainDataset[y+g].image,255))
+            output.push(onehot(trainDataset[y+g].label,10))
+          }
+          currLoss = model.train(input, output);
+        }
+        var testAccuracy = 0
+        for(var y=0; y<testDataset.length; y++){
+          var predicted = argMax(model.predict([testDataset[y].image]))
+          if(predicted == testDataset[y].label)
+            testAccuracy += 1
+        }
+        testAccuracy /= testDataset.length
+        console.log("testAccuracy: " + testAccuracy)
+
+        if(prevTestAccuracy >= testAccuracy)
+          break
+        prevTestAccuracy = testAccuracy
+        localStorage.setItem('PARAMS', JSON.stringify(model.parameters));
+      }
+    }
+    //train()
+  </script>
+</html>

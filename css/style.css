@@ -1,0 +1,92 @@
+body {
+	background: linear-gradient(-45deg, #a8e6cf, #dcedc1, #ffd3b6, #ffaaa5, #ff8b94);
+	background-size: 400% 400%;
+	-webkit-animation: gradient 10s ease infinite;
+	        animation: gradient 10s ease infinite;
+}
+
+@-webkit-keyframes gradient {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
+
+@keyframes gradient {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
+
+.button {
+  background-color: #4CAF50;
+  border: none;
+  color: rgba(255, 99, 71, 0.2);
+  padding: 8px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  transition-duration: 0.4s;
+  cursor: pointer;
+  border-radius: 10%;
+}
+
+.buttonA {
+  background-color: rgba(255, 99, 71, 0.2);
+  color: black;
+  border: 2px solid #008CBA;
+}
+
+.buttonA:hover {
+  background-color: #008CBA;
+  color: white;
+}
+
+@font-face {
+  font-family:"Worksans";
+  src: url("worksans.ttf") format("truetype");
+}
+
+body {
+  background-color:  #151719;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+.waviy {
+  position: relative;
+  -webkit-box-reflect: below -20px linear-gradient(transparent, rgba(0,0,0,.0));
+  font-size: 30px;
+}
+.waviy span {
+  font-family: 'Worksans';
+  position: relative;
+  display: inline-block;
+  color: #000;
+  text-transform: uppercase;
+  animation: waviy 3s infinite;
+  animation-delay: calc(.1s * var(--i));
+
+}
+@keyframes waviy {
+  0%,40%,100% {
+    transform: translateY(0)
+  }
+  20% {
+    transform: translateY(-20px)
+  }
+}
